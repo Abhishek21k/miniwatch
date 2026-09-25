@@ -9,6 +9,38 @@ A tiny stopwatch that lives in the MacBook notch.
 - **Clock app mirror (optional):** turn on *Show Clock App Stopwatch* to see the macOS Clock app's
   stopwatch in the island while miniwatch's own is idle (view-only).
 
+## Install
+
+Requires macOS 14 (Sonoma) or later. Runs on Apple Silicon and Intel; the island needs a notched
+MacBook, and floats as a pill everywhere else.
+
+**One line** (recommended):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Abhishek21k/miniwatch/main/scripts/install.sh | bash
+```
+
+It downloads the latest release, checks its checksum, puts `miniwatch.app` in `/Applications`
+and opens it. Run it again any time to update.
+
+**Manual download:** grab `miniwatch.zip` from the
+[latest release](https://github.com/Abhishek21k/miniwatch/releases/latest), unzip it and move
+`miniwatch.app` to `/Applications`. miniwatch isn't notarized by Apple, so the first launch is
+blocked. Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**,
+or run:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/miniwatch.app
+```
+
+**From source:** `git clone https://github.com/Abhishek21k/miniwatch && cd miniwatch && make install`
+(needs the Command Line Tools: `xcode-select --install`).
+
+To have it start with your Mac, right-click the menu bar stopwatch → **Launch at Login**.
+
+**Uninstall:** quit it from the menu, then
+`rm -rf /Applications/miniwatch.app && defaults delete io.github.miniwatch`.
+
 ## Controls
 
 | | |
@@ -28,7 +60,11 @@ Needs only the Command Line Tools (Swift 6), no Xcode. macOS 14+.
 make run       # build build/miniwatch.app and launch it
 make install   # copy to /Applications and launch (needed for Launch at Login)
 make test
+make release   # universal (arm64 + x86_64) build zipped into dist/ for a GitHub release
 ```
+
+To publish a release: bump `CFBundleShortVersionString` in `Resources/Info.plist`, run
+`make release`, then `gh release create vX.Y.Z dist/*`.
 
 ## Clock app mirror
 

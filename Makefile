@@ -6,10 +6,11 @@ TEST_FLAGS := -Xswiftc -F -Xswiftc $(CLT_DEV)/Frameworks \
 	-Xlinker -rpath -Xlinker $(CLT_DEV)/Frameworks \
 	-Xlinker -rpath -Xlinker $(CLT_DEV)/usr/lib
 
-.PHONY: build run install uninstall test clean
+.PHONY: build run install uninstall test release clean
 
+# Local builds target this Mac only; `make release` builds the universal app.
 build:
-	@scripts/bundle.sh
+	@ARCHS=$$(uname -m) scripts/bundle.sh
 
 run: build
 	@pkill -x miniwatch || true
@@ -29,5 +30,8 @@ uninstall:
 test:
 	@swift test $(if $(wildcard $(CLT_DEV)/Frameworks/Testing.framework),$(TEST_FLAGS))
 
+release:
+	@scripts/release.sh
+
 clean:
-	@rm -rf .build build
+	@rm -rf .build build dist
