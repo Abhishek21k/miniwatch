@@ -9,6 +9,9 @@ final class Stopwatch {
     private(set) var local: StopwatchState
     /// Clock app's stopwatch, set by `ClockMirror`; nil when mirroring is off.
     var clock: ClockStopwatch?
+    /// Clock's stopwatch as it stood at the last reset. Reset clears the island, so this snapshot
+    /// stays hidden until Clock's stopwatch changes (started, paused, lapped or reset in Clock).
+    private var dismissedClock: ClockStopwatch?
 
     @ObservationIgnored private let defaults: UserDefaults
     private static let storageKey = "stopwatch"
@@ -22,7 +25,7 @@ final class Stopwatch {
 
     // MARK: What the UI shows
 
-    var isMirroring: Bool { local.isIdle && clock?.isActive == true }
+    var isMirroring: Bool { local.isIdle && clock?.isActive == true && clock != dismissedClock }
     var isIdle: Bool { local.isIdle && !isMirroring }
     var isRunning: Bool { isMirroring ? clock!.isRunning : local.isRunning }
     var anchor: Date? { isMirroring ? clock!.anchor : local.anchor }
@@ -42,7 +45,10 @@ final class Stopwatch {
 
     func toggle() { mutate { $0.toggle(at: .now) } }
     func lap() { mutate { $0.lap(at: .now) } }
-    func reset() { mutate { $0.reset() } }
+    func reset() {
+        if dismissedClock != clock { dismissedClock = clock }
+        mutate { $0.reset() }
+    }
 
     private func mutate(_ change: (inout StopwatchState) -> Void) {
         var next = local
